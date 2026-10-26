@@ -467,7 +467,7 @@
     btn.addEventListener('click', function(){
       coachPickOptions.pickValue = d.id;
       state.directCoach = (d.id === 'any') ? '' : d.id;
-      state.step = (d.id === 'any') ? 1 : 4;
+      state.step = 1;
       renderQuiz();
     });
     coachPickOptions.appendChild(btn);
@@ -544,13 +544,7 @@
   }
 
   document.getElementById('quiz-back').addEventListener('click', function(){
-    if (state.directCoach && state.step === 4){
-      state.directCoach = '';
-      coachPickOptions.pickValue = '';
-      state.step = 0;
-    } else {
-      state.step = Math.max(0, state.step - 1);
-    }
+    state.step = Math.max(0, state.step - 1);
     renderQuiz();
   });
   document.getElementById('quiz-form').addEventListener('submit', function(e){
