@@ -231,13 +231,7 @@
           <div id="quiz-progress-bar" style="height:100%;background:var(--lilac);border-radius:999px;width:0%;transition:width .3s ease;"></div>
         </div>
 
-        <div id="quiz-step-0">
-          <h3 style="font-size:24px;margin-bottom:8px;">Already know who you want to work with?</h3>
-          <p style="font-size:14px;color:var(--ink-soft);margin-bottom:24px;">Pick a coach directly, or let us match you.</p>
-          <div id="coach-pick-options" style="display:flex;flex-direction:column;gap:14px;"></div>
-        </div>
-
-        <div id="quiz-step-1" style="display:none;">
+        <div id="quiz-step-1">
           <h3 style="font-size:24px;margin-bottom:24px;">What's your main goal right now?</h3>
           <div id="goal-options" style="display:flex;flex-direction:column;gap:14px;"></div>
         </div>
@@ -253,6 +247,12 @@
         </div>
 
         <div id="quiz-step-4" style="display:none;">
+          <h3 style="font-size:24px;margin-bottom:8px;">Already know who you want to work with?</h3>
+          <p style="font-size:14px;color:var(--ink-soft);margin-bottom:24px;">Pick a coach directly, or stick with your match.</p>
+          <div id="coach-pick-options" style="display:flex;flex-direction:column;gap:14px;"></div>
+        </div>
+
+        <div id="quiz-step-5" style="display:none;">
           <h3 style="font-size:24px;margin-bottom:8px;">Last step, where should we send your match?</h3>
           <p style="font-size:14px;color:var(--ink-soft);margin-bottom:24px;">No spam, just your coach match and next steps.</p>
           <form id="quiz-form" style="display:flex;flex-direction:column;gap:20px;">
@@ -268,7 +268,7 @@
           </form>
         </div>
 
-        <div id="quiz-step-5" style="display:none;text-align:center;padding:10px 0 0;">
+        <div id="quiz-step-6" style="display:none;text-align:center;padding:10px 0 0;">
           <h3 style="font-size:24px;" id="quiz-result-heading"></h3>
           <div class="match-card" id="match-card" style="margin-top:28px;"></div>
           <a class="btn-primary-lg" id="quiz-meet-link" href="#" style="margin-top:28px;width:100%;display:block;">Meet Your Coach</a>
@@ -382,7 +382,7 @@
     { id: 'high', label: '6+ Hours A Week' }
   ];
 
-  var state = { step: 0, goal: '', experience: '', time: '', name: '', email: '', directCoach: '' };
+  var state = { step: 1, goal: '', experience: '', time: '', name: '', email: '', directCoach: '' };
 
   // ---- Coach cards ----
   var coachGrid = document.getElementById('coach-grid');
@@ -467,7 +467,7 @@
     btn.addEventListener('click', function(){
       coachPickOptions.pickValue = d.id;
       state.directCoach = (d.id === 'any') ? '' : d.id;
-      state.step = 1;
+      state.step = 5;
       renderQuiz();
     });
     coachPickOptions.appendChild(btn);
@@ -490,6 +490,7 @@
   buildOptions(goalOptions, goalDefs, 'goal', 2);
   buildOptions(experienceOptions, experienceDefs, 'experience', 3);
   buildOptions(timeOptions, timeDefs, 'time', 4);
+  // coach-pick step 4 and contact form step 5 are wired separately above/below
 
   function markSelected(container, defs, value){
     var btns = container.querySelectorAll('.quiz-option');
@@ -505,7 +506,7 @@
     return coachData.find(function(c){ return c.id === 'chloe'; });
   }
 
-  var quizSteps = [0,1,2,3,4,5].map(function(n){ return document.getElementById('quiz-step-' + n); });
+  var quizSteps = [1,2,3,4,5,6].map(function(n){ return document.getElementById('quiz-step-' + n); });
   var quizTopbar = document.getElementById('quiz-topbar');
   var quizMatchedLabel = document.getElementById('quiz-matched-label');
   var quizProgressBar = document.getElementById('quiz-progress-bar');
@@ -517,17 +518,17 @@
     markSelected(experienceOptions, experienceDefs, state.experience);
     markSelected(timeOptions, timeDefs, state.time);
 
-    quizSteps.forEach(function(el, i){ el.style.display = (state.step === i) ? 'block' : 'none'; });
+    quizSteps.forEach(function(el, i){ el.style.display = (state.step === i + 1) ? 'block' : 'none'; });
 
-    var showBack = state.step > 0 && state.step < 5;
+    var showBack = state.step > 1 && state.step < 6;
     quizTopbar.style.display = showBack ? 'flex' : 'none';
-    quizMatchedLabel.style.display = (state.step === 5) ? 'flex' : 'none';
+    quizMatchedLabel.style.display = (state.step === 6) ? 'flex' : 'none';
 
-    var clampedStep = Math.min(Math.max(state.step, 1), 4);
-    quizProgressBar.style.width = (((clampedStep - 1) / 3) * 100) + '%';
-    quizProgressLabel.textContent = (state.step === 0) ? '' : 'Step ' + clampedStep + ' Of 4';
+    var clampedStep = Math.min(state.step, 5);
+    quizProgressBar.style.width = (((clampedStep - 1) / 4) * 100) + '%';
+    quizProgressLabel.textContent = 'Step ' + clampedStep + ' Of 5';
 
-    if (state.step === 5){
+    if (state.step === 6){
       var coach = matchCoach();
       document.getElementById('quiz-result-heading').textContent = 'Thanks, ' + state.name + '! You\'re a great fit for…';
       document.getElementById('match-card').innerHTML =
@@ -544,7 +545,7 @@
   }
 
   document.getElementById('quiz-back').addEventListener('click', function(){
-    state.step = Math.max(0, state.step - 1);
+    state.step = Math.max(1, state.step - 1);
     renderQuiz();
   });
   document.getElementById('quiz-form').addEventListener('submit', function(e){
@@ -552,12 +553,12 @@
     state.name = document.getElementById('quiz-name').value;
     state.email = document.getElementById('quiz-email').value;
     if (state.name && state.email){
-      state.step = 5;
+      state.step = 6;
       renderQuiz();
     }
   });
   document.getElementById('quiz-restart').addEventListener('click', function(){
-    state = { step: 0, goal: '', experience: '', time: '', name: '', email: '', directCoach: '' };
+    state = { step: 1, goal: '', experience: '', time: '', name: '', email: '', directCoach: '' };
     coachPickOptions.pickValue = '';
     document.getElementById('quiz-name').value = '';
     document.getElementById('quiz-email').value = '';
